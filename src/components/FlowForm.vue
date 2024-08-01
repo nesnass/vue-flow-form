@@ -14,7 +14,7 @@
           v-model="q.answer"
           v-on:answer="onQuestionAnswered"
           v-on:next="onNext"
-          v-on:previous="onPrev"
+          v-on:previous="onPrevious"
           v-bind:reverse="reverse"
           v-bind:disabled="disabled"
           v-on:disable="setDisabled"

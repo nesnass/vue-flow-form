@@ -69,7 +69,7 @@
           type="button"
           ref="button"
           href="#"
-          v-on:click.prevent="onPrev"
+          v-on:click.prevent="onPrevious"
           v-bind:aria-label="language.prev"
         >
           <span>{{ language.prev }}</span>
@@ -254,12 +254,12 @@
         this.checkAnswer(this.emitAnswerTab)
       },
 
-      onPrev($event) {
-        this.$emit('previous', q)
+      onPrevious($event) {
+        this.$emit('previous', this.question)
       },
 
       onNext($event) {
-        this.$emit('next', q)
+        this.$emit('next', this.question)
       },
 
       checkAnswer(fn) {
