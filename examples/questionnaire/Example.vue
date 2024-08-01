@@ -1,5 +1,5 @@
 // Create and setup your form here
- 
+
 <template>
   <div>
     <header class="vff-header">
@@ -21,6 +21,8 @@
       v-bind:questions="questions"
       v-bind:language="language"
       v-bind:standalone="true"
+      :navigation="false"
+      :customnav="true"
     >
     <!-- Custom content for the Complete/Submit screen slots in the FlowForm component -->
       <!-- We've overriden the default "complete" slot content -->
@@ -33,13 +35,13 @@
             </span>
           </p>
           <p class="f-description">Note: No data will be saved and/or sent in this demo.</p>
-        </div>  
+        </div>
       </template>
 
       <!-- We've overriden the default "completeButton" slot content -->
       <template v-slot:completeButton>
         <div class="f-submit" v-if="!submitted">
-          <button 
+          <button
             class="o-btn-action"
             ref="button"
             type="submit"
@@ -211,7 +213,7 @@
               })
             ]
           }),
- 
+
           new QuestionModel({
             id: 'break_1',
             title: 'Awesome, thank you. 🙏',
@@ -305,7 +307,7 @@
         // completeButton slot.
         this.onSendData()
       },
-      
+
       onSendData() {
         // Set `submitted` to true so the form knows not to allow back/forward
         // navigation anymore.

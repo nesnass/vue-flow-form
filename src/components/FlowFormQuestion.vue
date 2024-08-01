@@ -54,8 +54,8 @@
         <p v-if="question.description || question.descriptionLink.length !== 0" class="f-description">
           <span v-if="question.description">{{ question.description }}</span>
           <a
-            v-for="(link, index) in question.descriptionLink" 
-            class="f-link" 
+            v-for="(link, index) in question.descriptionLink"
+            class="f-link"
             v-bind:key="'m' + index"
             v-bind:href="link.url"
             v-bind:target="link.target"
@@ -63,8 +63,32 @@
         </p>
 
       </div>
+      <div class="vff-animate f-fade-in f-nav-buttons" v-if="customnav">
+        <button
+          class="o-btn-nav"
+          type="button"
+          ref="button"
+          href="#"
+          v-on:click.prevent="onPrev"
+          v-bind:aria-label="language.prev"
+        >
+          <span>{{ language.prev }}</span>
+        </button>
+
+        <button
+          class="o-btn-nav"
+          type="button"
+          ref="button"
+          href="#"
+          v-on:click.prevent="onNext"
+          v-bind:aria-label="language.next"
+        >
+          <span>{{ language.next }}</span>
+        </button>
+      </div>
+
       <div class="vff-animate f-fade-in f-enter" v-if="showOkButton()">
-        <button 
+        <button
           class="o-btn-action"
           type="button"
           ref="button"
@@ -77,7 +101,7 @@
           <span v-else>{{ language.ok }}</span>
         </button>
 
-        <a 
+        <a
           class="f-enter-desc"
           href="#"
           v-if="question.type !== QuestionType.LongText || !isMobile"
@@ -117,7 +141,7 @@
   import FlowFormOpinionScaleType from './QuestionTypes/OpinionScaleType.vue'
   import FlowFormIconRateType from './QuestionTypes/IconRateType.vue'
   import { IsMobile } from '../mixins/IsMobile'
-  
+
 
   export default {
     name: 'FlowFormQuestion',
@@ -160,7 +184,11 @@
       autofocus: {
         type: Boolean,
         default: true
-      }
+      },
+      customnav: {
+        type: Boolean,
+        default: false
+      },
     },
 
     mixins: [
@@ -193,7 +221,7 @@
        */
       focusField() {
         const el = this.$refs.questionComponent
-        
+
         el && el.focus()
       },
 
@@ -217,13 +245,21 @@
 
       /**
        * Emits "answer" event and calls "onEnter" method on Enter press
-       */ 
+       */
       onEnter($event) {
         this.checkAnswer(this.emitAnswer)
       },
 
       onTab($event) {
         this.checkAnswer(this.emitAnswerTab)
+      },
+
+      onPrev($event) {
+        this.$emit('previous', q)
+      },
+
+      onNext($event) {
+        this.$emit('next', q)
       },
 
       checkAnswer(fn) {
@@ -255,7 +291,7 @@
         if (q && this.question.type !== QuestionType.Date) {
           this.returnFocus()
           this.$emit('answer', q)
-          
+
           q.onEnter()
         }
       },
@@ -263,13 +299,13 @@
       debounce(fn, delay) {
         let debounceTimer
         this.debounced = true
-      
+
         return (() => {
           clearTimeout(debounceTimer)
           debounceTimer = setTimeout(fn, delay)
         })()
       },
-      
+
       /**
        * Check if the "OK" button should be shown.
        */
@@ -291,7 +327,7 @@
         if (this.question.isMultipleChoiceType() && !this.question.multiple && this.question.nextStepOnAnswer) {
           return false
         }
-      
+
         // If there is no question referenced, or dataValue is still set to its default (null).
         // This allows a ChoiceOption value of false, but will not allow you to use null as a value.
         if (!q || this.dataValue === null) {
@@ -306,7 +342,7 @@
 
         // We might not have a reference to the question component at first
         // but we know that if we don't, it's definitely empty
-        return !this.question.required && (!q || !q.hasValue)
+        return !this.customnav && !this.question.required && (!q || !q.hasValue)
       },
 
       /**

@@ -13,15 +13,18 @@
           v-bind:active="q.index === activeQuestionIndex"
           v-model="q.answer"
           v-on:answer="onQuestionAnswered"
+          v-on:next="onNext"
+          v-on:previous="onPrev"
           v-bind:reverse="reverse"
           v-bind:disabled="disabled"
           v-on:disable="setDisabled"
           v-bind:autofocus="autofocus"
+          v-bind:customnav="customnav"
         />
 
         <slot></slot>
 
-        <!-- Complete/Submit screen slots -->   
+        <!-- Complete/Submit screen slots -->
         <div v-if="isOnLastStep" class="vff-animate f-fade-in-up field-submittype">
           <slot name="complete">
             <!-- Default content for the "complete" slot -->
@@ -34,17 +37,17 @@
 
           <slot name="completeButton">
             <!-- Default content for the "completeButton" slot -->
-            <button 
+            <button
               class="o-btn-action"
-              ref="button" 
-              type="button" 
-              href="#" 
-              v-on:click.prevent="submit()" 
+              ref="button"
+              type="button"
+              href="#"
+              v-on:click.prevent="submit()"
               v-if="!submitted"
               v-bind:aria-label="language.ariaSubmitText">
                 <span>{{ language.submitText }}</span>
             </button>
-            <a 
+            <a
               class="f-enter-desc"
               href="#"
               v-on:click.prevent="submit()"
@@ -144,27 +147,31 @@
     components: {
       FlowFormQuestion
     },
-    
+
     props: {
       questions: {
         type: Array,
         validator: value => value.every(q => q instanceof QuestionModel)
-      }, 
+      },
       language: {
         type: LanguageModel,
         default: () => new LanguageModel()
       },
       progressbar: {
-        type: Boolean, 
+        type: Boolean,
         default: true
       },
       standalone: {
-        type: Boolean, 
+        type: Boolean,
         default: true
       },
       navigation: {
-        type: Boolean, 
+        type: Boolean,
         default: true
+      },
+      customnav: {
+        type: Boolean,
+        default: false
       },
       timer: {
         type: Boolean,
@@ -212,14 +219,14 @@
       document.removeEventListener('keydown', this.onKeyDownListener)
       document.removeEventListener('keyup', this.onKeyUpListener, true)
       window.removeEventListener('beforeunload', this.onBeforeUnload)
-      
+
       this.stopTimer()
     },
 
     beforeUpdate() {
       this.questionRefs = []
     },
-    
+
     computed: {
       numActiveQuestions() {
         return this.questionListActivePath.length
@@ -265,7 +272,7 @@
 
       isOnLastStep() {
         return this.numActiveQuestions > 0 && this.activeQuestionIndex === this.questionListActivePath.length
-      }, 
+      },
 
       isOnTimerStartStep() {
         if (this.activeQuestionId === this.timerStartStep) {
@@ -283,9 +290,9 @@
         if (this.submitted) {
           return true
         }
-        
+
         if (this.activeQuestionId === this.timerStopStep) {
-          return true 
+          return true
         }
 
         return false
@@ -314,7 +321,7 @@
               children = defaultSlot[0].children
               if (!children) {
                 children = defaultSlot
-              } 
+              }
             }
 
             if (children) {
@@ -327,7 +334,7 @@
 
                   if (componentInstance.question !== null) {
                     model = componentInstance.question
-                  } 
+                  }
 
                   if (props.modelValue) {
                     model.answer = props.modelValue
@@ -432,7 +439,7 @@
           if (questions.some(q => q === question)) {
             break
           }
-          
+
           question.setIndex(serialIndex)
           question.language = this.language
 
@@ -442,7 +449,7 @@
             ++index
           } else if (question.answered) {
             nextId = question.getJumpId()
-            
+
             if (nextId) {
               if (nextId === '_submit') {
                 index = this.questionModels.length
@@ -539,7 +546,7 @@
             this.reverse = false
           }
         }
-      }, 
+      },
 
       onKeyUpListener(e) {
         if (e.shiftKey || ['Tab', 'Enter'].indexOf(e.key) === -1 || this.submitted) {
@@ -553,7 +560,7 @@
         } else {
           if (e.key === 'Enter') {
             this.emitEnter()
-          } 
+          }
 
           e.stopPropagation()
           this.reverse = false
@@ -617,8 +624,16 @@
         if (this.completed && !this.isOnLastStep) {
           return true
         }
-   
+
         return this.activeQuestionIndex < this.questionList.length - 1
+      },
+
+      onPrevious(question) {
+        this.$emit('previous', question.question)
+      },
+
+      onNext(question) {
+        this.$emit('next', question.question)
       },
 
       /**
@@ -631,7 +646,7 @@
           if (this.activeQuestionIndex < this.questionListActivePath.length) {
             ++this.activeQuestionIndex
           }
-         
+
           this.$nextTick(() => {
             this.reverse = false
 
@@ -649,7 +664,7 @@
                 // No more questions left - set "completed" to true
                 this.completed = true
                 this.activeQuestionIndex = this.questionListActivePath.length
-                
+
                 this.$refs.button && this.$refs.button.focus()
               }
 
@@ -666,7 +681,7 @@
        */
       goToPreviousQuestion() {
         this.blurFocus()
-    
+
         if (this.activeQuestionIndex > 0 && !this.submitted) {
           if (this.isOnTimerStopStep) {
             this.startTimer()
@@ -711,11 +726,11 @@
 
         if (index !== this.activeQuestionIndex) {
           this.blurFocus()
-      
+
           if (!this.submitted && index <= this.questionListActivePath.length - 1) {
             // Check if we can actually jump to the wanted question.
             do {
-              const previousQuestionsAnswered = 
+              const previousQuestionsAnswered =
                 this
                   .questionListActivePath
                   .slice(0, index)
@@ -770,7 +785,7 @@
 
       incrementTime() {
         ++this.time
-        
+
         this.$emit('timer', this.time, this.formatTime(this.time))
       },
 
@@ -778,7 +793,7 @@
         let
           startIndex = 14,
           length = 5
-            
+
         if (seconds >= 60 * 60) {
           startIndex = 11
           length = 8
@@ -801,7 +816,7 @@
       completed() {
         this.emitComplete()
       },
-      
+
       submitted() {
         this.stopTimer()
       }
