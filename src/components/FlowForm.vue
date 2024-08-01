@@ -629,11 +629,11 @@
       },
 
       onPrevious(question) {
-        this.$emit('previous', question.question)
+        this.$emit('previous', question)
       },
 
       onNext(question) {
-        this.$emit('next', question.question)
+        this.$emit('next', question)
       },
 
       /**
